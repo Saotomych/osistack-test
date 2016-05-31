@@ -69,9 +69,9 @@ void OsiStackTest::startServer()
 	qint32 port = 18982;
 	pTest->pAcseAssociationListener = new CAcseAssociationListener;
 	pTest->pServerAcse = new CServerAcseSap(port, 0, QHostAddress("127.0.0.1"), pTest->pAcseAssociationListener, CSocketFactory::getSocketFactory());
-	pTest->pServerAcse = new CServerAcseSap(port, 0, QHostAddress("127.0.0.1"), nullptr, CSocketFactory::getSocketFactory());
 	pTest->pServerAcse->setMessageTimeout(500);
 	pTest->pServerAcse->setMessageFragmentTimeout(500);
+	pTest->pConnectionListener = pTest->pServerAcse->getConnectionListener();
 
 	// server slots
 	pTest->connect(pTest->pConnectionListener, SIGNAL(signalConnected(const CConnection*)), pTest, SLOT(slotServerClientConnected(const CConnection*)));
@@ -83,7 +83,7 @@ void OsiStackTest::startServer()
 	// acse server slots
 	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseConnected(CAcseAssociation*)), pTest, SLOT(slotAcseServerClientConnected(CAcseAssociation*)));
 	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseDisconnected(CAcseAssociation*)), pTest, SLOT(slotAcseServerAssociationClosed(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalTSduReady(CAcseAssociation*)), pTest, SLOT(slotAcseServerTSduReady(CAcseAssociation*)));
+	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), pTest, SLOT(slotAcseServerTSduReady(CAcseAssociation*)));
 	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseCnReady(CAcseAssociation*)), pTest, SLOT(slotAcseServerCnReady(CAcseAssociation*)));
 	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseIOError(QString)), pTest, SLOT(slotAcseServerIOError(QString)));
 
@@ -147,12 +147,12 @@ void OsiStackTest::Test1::runTest()
 
 	OsiStackTest* pTest = OsiStackTest::getMainTest();
 
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkClientConnected wrong", true, pTest->checkClientConnected);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkClientErrorConnected wrong", false, pTest->checkClientErrorConnected);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkServerConnected wrong", true, pTest->checkServerConnected);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkServerErrorConnected wrong", false, pTest->checkServerErrorConnected);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkIllegalArg wrong", false, pTest->checkIllegalArg);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkIllegalClassMbr wrong", false, pTest->checkIllegalClassMbr);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkClientConnected wrong", true, pTest->checkClientConnected);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkClientErrorConnected wrong", false, pTest->checkClientErrorConnected);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkServerConnected wrong", true, pTest->checkServerConnected);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkServerErrorConnected wrong", false, pTest->checkServerErrorConnected);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkIllegalArg wrong", false, pTest->checkIllegalArg);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test1: checkIllegalClassMbr wrong", false, pTest->checkIllegalClassMbr);
 }
 
 void OsiStackTest::Test2::runTest()
@@ -229,22 +229,22 @@ void OsiStackTest::slotServerIOError(QString str)
 }
 
 // server acse level slots
-void OsiStackTest::slotAcseServerClientConnected(const CAcseAssociation*)
+void OsiStackTest::slotAcseServerClientConnected(CAcseAssociation*)
 {
 
 }
 
-void OsiStackTest::slotAcseServerAssociationClosed(const CAcseAssociation*)
+void OsiStackTest::slotAcseServerAssociationClosed(CAcseAssociation*)
 {
 
 }
 
-void OsiStackTest::slotAcseServerCnReady(const CAcseAssociation*)
+void OsiStackTest::slotAcseServerCnReady(CAcseAssociation*)
 {
 
 }
 
-void OsiStackTest::slotAcseServerTSduReady(const CAcseAssociation*)
+void OsiStackTest::slotAcseServerTSduReady(CAcseAssociation*)
 {
 
 }
@@ -300,17 +300,17 @@ void OsiStackTest::slotClientIOError(QString str)
 }
 
 // client acse slots
-void OsiStackTest::slotAcseClientAssociationReady(const CAcseAssociation*)
+void OsiStackTest::slotAcseClientAssociationReady(CAcseAssociation*)
 {
 
 }
 
-void OsiStackTest::slotAcseClientAssociationClosed(const CAcseAssociation*)
+void OsiStackTest::slotAcseClientAssociationClosed(CAcseAssociation*)
 {
 
 }
 
-void OsiStackTest::slotAcseClientTSduReady(const CAcseAssociation*)
+void OsiStackTest::slotAcseClientTSduReady(CAcseAssociation*)
 {
 
 }

@@ -184,10 +184,10 @@ public slots:
 	void slotServerIOError(QString str);
 
 	// server acse level slots
-	void slotAcseServerClientConnected(const CAcseAssociation* that);
-	void slotAcseServerAssociationClosed(const CAcseAssociation*);
-	void slotAcseServerCnReady(const CAcseAssociation*);
-	void slotAcseServerTSduReady(const CAcseAssociation*);
+	void slotAcseServerClientConnected(CAcseAssociation* that);
+	void slotAcseServerAssociationClosed(CAcseAssociation*);
+	void slotAcseServerCnReady(CAcseAssociation*);
+	void slotAcseServerTSduReady(CAcseAssociation*);
 	void slotAcseServerIOError(QString strErr);
 
 	// client slots
@@ -197,9 +197,9 @@ public slots:
 	void slotClientIOError(QString str);
 
 	// client acse slots
-	void slotAcseClientAssociationReady(const CAcseAssociation*);
-	void slotAcseClientAssociationClosed(const CAcseAssociation*);
-	void slotAcseClientTSduReady(const CAcseAssociation*);
+	void slotAcseClientAssociationReady(CAcseAssociation*);
+	void slotAcseClientAssociationClosed(CAcseAssociation*);
+	void slotAcseClientTSduReady(CAcseAssociation*);
 	void slotAcseClientIOError(QString strErr);
 
 	// Client Errors
