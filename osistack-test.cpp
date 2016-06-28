@@ -127,6 +127,8 @@ void OsiStackTest::startClient()
 
 	pTest->pClientAcse->startAssociation(pTest->pAcseAssociation, QString(""), apdu);
 
+	// TODO Parse data without headers
+
 }
 
 void OsiStackTest::sendTestData(CConnection* that)
@@ -354,8 +356,8 @@ void OsiStackTest::prepare()
 	CServer* srv = new CServer(this);
 	CClient* clt = new CClient(this);
 
-	srv->start();
-	QThread::usleep(500);
+//	srv->start();
+//	QThread::usleep(500);
 	clt->start();
 
 }
@@ -364,18 +366,18 @@ void OsiStackTest::run()
 {
     // Do processing here
 
-	CppUnit::TextTestRunner runner;
-	runner.addTest(test1);
-	runner.addTest(test2);
-	runner.addTest(test3);
-
-	runner.run();
-
-	std::ofstream outFile("testResult.xml");
-	CppUnit::XmlOutputter outputer(&runner.result(), outFile);
-	outputer.write();
-
-	emit finished();
+//	CppUnit::TextTestRunner runner;
+//	runner.addTest(test1);
+//	runner.addTest(test2);
+//	runner.addTest(test3);
+//
+//	runner.run();
+//
+//	std::ofstream outFile("testResult.xml");
+//	CppUnit::XmlOutputter outputer(&runner.result(), outFile);
+//	outputer.write();
+//
+//	emit finished();
 }
 
 int main(int argc, char *argv[])
