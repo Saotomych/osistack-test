@@ -87,6 +87,7 @@ public:
 	bool checkAcseIOError;
 
 	QByteArray m_serverRcvData;
+	QByteArray m_serverPayload;
 	QByteArray m_clientRcvData;
 
 	static const quint8 s_mmsInitRequestPDU[];
@@ -177,7 +178,7 @@ public:
 public slots:
 
 	// server transport level slots
-	void slotServerClientConnected(const CConnection*);
+	void slotServerClientConnected(const CConnection* pconn);
 	void slotServerClientDisconnected(const CConnection*);
 	void slotServerTSduReady(const CConnection*);
 	void slotServerCRReady(const CConnection*);

@@ -57,75 +57,79 @@ const quint8 OsiStackTest::s_testData[] = {
 
 void OsiStackTest::startServer()
 {
-	OsiStackTest* pTest = OsiStackTest::getMainTest();
-
-	pTest->checkServerConnected = false;
-	pTest->checkServerErrorConnected = false;
-	pTest->checkServerErrorTransfer = false;
-	pTest->checkIllegalArg = false;
-	pTest->checkIllegalClassMbr = false;
+	checkServerConnected = false;
+	checkServerErrorConnected = false;
+	checkServerErrorTransfer = false;
+	checkIllegalArg = false;
+	checkIllegalClassMbr = false;
 
 	// Create server and start listening
 	qint32 port = 18982;
-	pTest->pAcseAssociationListener = new CAcseAssociationListener;
-	pTest->pServerAcse = new CServerAcseSap(port, 0, QHostAddress("127.0.0.1"), pTest->pAcseAssociationListener, CSocketFactory::getSocketFactory());
-	pTest->pServerAcse->setMessageTimeout(500);
-	pTest->pServerAcse->setMessageFragmentTimeout(500);
-	pTest->pConnectionListener = pTest->pServerAcse->getConnectionListener();
+	pAcseAssociationListener = new CAcseAssociationListener;
+	pServerAcse = new CServerAcseSap(port, 0, QHostAddress("127.0.0.1"), pAcseAssociationListener, CSocketFactory::getSocketFactory());
+	pServerAcse->setMessageTimeout(500);
+	pServerAcse->setMessageFragmentTimeout(500);
+	pConnectionListener = pServerAcse->getConnectionListener();
 
 	// server slots
-	pTest->connect(pTest->pConnectionListener, SIGNAL(signalConnected(const CConnection*)), pTest, SLOT(slotServerClientConnected(const CConnection*)));
-	pTest->connect(pTest->pConnectionListener, SIGNAL(signalDisconnected(const CConnection*)), pTest, SLOT(slotServerClientDisconnected(const CConnection*)));
-	pTest->connect(pTest->pConnectionListener, SIGNAL(signalTSduReady(const CConnection*)), pTest, SLOT(slotServerTSduReady(const CConnection*)));
-	pTest->connect(pTest->pConnectionListener, SIGNAL(signalCRReady(const CConnection*)), pTest, SLOT(slotServerCRReady(const CConnection*)));
-	pTest->connect(pTest->pConnectionListener, SIGNAL(signalIOError(QString)), pTest, SLOT(slotServerIOError(QString)));
+	connect(pConnectionListener, SIGNAL(signalConnected(const CConnection*)), this, SLOT(slotServerClientConnected(const CConnection*)));
+	connect(pConnectionListener, SIGNAL(signalDisconnected(const CConnection*)), this, SLOT(slotServerClientDisconnected(const CConnection*)));
+	connect(pConnectionListener, SIGNAL(signalTSduReady(const CConnection*)), this, SLOT(slotServerTSduReady(const CConnection*)));
+	connect(pConnectionListener, SIGNAL(signalCRReady(const CConnection*)), this, SLOT(slotServerCRReady(const CConnection*)));
+	connect(pConnectionListener, SIGNAL(signalIOError(QString)), this, SLOT(slotServerIOError(QString)));
 
 	// acse server slots
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseConnected(CAcseAssociation*)), pTest, SLOT(slotAcseServerClientConnected(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseDisconnected(CAcseAssociation*)), pTest, SLOT(slotAcseServerAssociationClosed(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), pTest, SLOT(slotAcseServerTSduReady(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseCnReady(CAcseAssociation*)), pTest, SLOT(slotAcseServerCnReady(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociationListener, SIGNAL(signalAcseIOError(QString)), pTest, SLOT(slotAcseServerIOError(QString)));
+	connect(pAcseAssociationListener, SIGNAL(signalAcseConnected(CAcseAssociation*)), this, SLOT(slotAcseServerClientConnected(CAcseAssociation*)));
+	connect(pAcseAssociationListener, SIGNAL(signalAcseDisconnected(CAcseAssociation*)), this, SLOT(slotAcseServerAssociationClosed(CAcseAssociation*)));
+	connect(pAcseAssociationListener, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), this, SLOT(slotAcseServerTSduReady(CAcseAssociation*)));
+	connect(pAcseAssociationListener, SIGNAL(signalAcseCnReady(CAcseAssociation*)), this, SLOT(slotAcseServerCnReady(CAcseAssociation*)));
+	connect(pAcseAssociationListener, SIGNAL(signalAcseIOError(QString)), this, SLOT(slotAcseServerIOError(QString)));
 
-	pTest->pServerAcse->startListening();
+	pServerAcse->startListening();
 
 }
 
 void OsiStackTest::startClient()
 {
-	OsiStackTest* pTest = OsiStackTest::getMainTest();
-
-	pTest->checkClientConnected = false;
-	pTest->checkClientErrorConnected = false;
-	pTest->checkClientErrorTransfer = false;
+	checkClientConnected = false;
+	checkClientErrorConnected = false;
+	checkClientErrorTransfer = false;
 
 	// Create client and start connection
-	pTest->pClientAcse = new CClientAcseSap(CSocketFactory::getSocketFactory());
+	pClientAcse = new CClientAcseSap(CSocketFactory::getSocketFactory());
 
 	// client's error slots
-	pTest->connect(pTest->pClientAcse->m_pClientTSap, SIGNAL(signalIllegalArgument(QString)), pTest, SLOT(slotIllegalArgument(QString)));
-	pTest->connect(pTest->pClientAcse->m_pClientTSap, SIGNAL(signalConnectError(QString)), pTest, SLOT(slotConnectError(QString)));
-	pTest->connect(pTest->pClientAcse->m_pClientTSap, SIGNAL(signalIllegalClassMember(QString)), pTest, SLOT(slotIllegalClassMember(QString)));
+	connect(pClientAcse->m_pClientTSap, SIGNAL(signalIllegalArgument(QString)), this, SLOT(slotIllegalArgument(QString)));
+	connect(pClientAcse->m_pClientTSap, SIGNAL(signalConnectError(QString)), this, SLOT(slotConnectError(QString)));
+	connect(pClientAcse->m_pClientTSap, SIGNAL(signalIllegalClassMember(QString)), this, SLOT(slotIllegalClassMember(QString)));
 
-	pTest->pClientAcse->setMaxTPDUSizeParam(7);
-	pTest->pClientAcse->setMessageTimeout(5000);
-	pTest->pClientAcse->setMessageFragmentTimeout(5000);
+	pClientAcse->setMaxTPDUSizeParam(7);
+	pClientAcse->setMessageTimeout(5000);
+	pClientAcse->setMessageFragmentTimeout(5000);
 
 	QHostAddress address("127.0.0.1");
 	qint32 port = 18982;
 
-	pTest->pConnection = pTest->pClientAcse->m_pClientTSap->createConnection(address, port);
-	pTest->pAcseAssociation = pTest->pClientAcse->createAssociate(pTest->pConnection);
+	pConnection = pClientAcse->m_pClientTSap->createConnection(address, port);
+
+	if (pConnection)
+		slotConnectionReady(pConnection);
+
+	pAcseAssociation = pClientAcse->createAssociate(pConnection);
 
 	// connection slots
-	pTest->connect(pTest->pAcseAssociation, SIGNAL(signalAcseAssociationReady(CAcseAssociation*)), pTest, SLOT(slotAcseClientAssociationReady(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociation, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), pTest, SLOT(slotAcseClientTSduReady(CAcseAssociation*)));
-	pTest->connect(pTest->pAcseAssociation, SIGNAL(signalAcseIOError(QString)), pTest, SLOT(slotAcseClientIOError(QString)));
+	pConnection->asyncReadWriteInit();
+	connect(pConnection, SIGNAL(signalTSduReady(const CConnection*)), this, SLOT(slotClientTSduReady(const CConnection*)));
+	connect(pConnection, SIGNAL(signalConnectionReady(const CConnection*)), this, SLOT(slotConnectionReady(const CConnection*)));
+	connect(pConnection, SIGNAL(signalConnectionClosed(const CConnection*)), this, SLOT(slotConnectionClosed(const CConnection*)));
+	connect(pAcseAssociation, SIGNAL(signalAcseAssociationReady(CAcseAssociation*)), this, SLOT(slotAcseClientAssociationReady(CAcseAssociation*)));
+	connect(pAcseAssociation, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), this, SLOT(slotAcseClientTSduReady(CAcseAssociation*)));
+	connect(pAcseAssociation, SIGNAL(signalAcseIOError(QString)), this, SLOT(slotAcseClientIOError(QString)));
 
 	QByteArray arrApdu( (char*) s_mmsInitRequestPDU, sizeof(s_mmsInitRequestPDU)/sizeof(s_mmsInitRequestPDU[0]) );
 	CBerByteArrayOutputStream apdu(arrApdu, 0);
 
-	pTest->pClientAcse->startAssociation(pTest->pAcseAssociation, QString(""), apdu);
+	pClientAcse->startAssociation(pAcseAssociation, QString(""), apdu);
 
 	// TODO Parse data without headers
 
@@ -163,17 +167,17 @@ void OsiStackTest::Test2::runTest()
 
 	OsiStackTest* pTest = OsiStackTest::getMainTest();
 
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Server side has error transfer", false, pTest->checkServerErrorTransfer);
-//
-//	qint32 expectedSize = sizeof(s_testData)/sizeof(s_testData[0]);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Check server size of received data wrong", expectedSize, pTest->m_serverRcvData.size());
-//
-//	QByteArray::Iterator dataIt = pTest->m_serverRcvData.begin();
-//	for (char c: s_testData)
-//	{
-//		CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Check server side received data wrong", c, *dataIt);
-//		dataIt++;
-//	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Server side has error transfer", false, pTest->checkServerErrorTransfer);
+
+	qint32 expectedSize = sizeof(s_testData)/sizeof(s_testData[0]);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Check server size of received data wrong", expectedSize, pTest->m_serverRcvData.size());
+
+	QByteArray::Iterator dataIt = pTest->m_serverRcvData.begin();
+	for (char c: s_testData)
+	{
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Test2: Check server side received data wrong", c, *dataIt);
+		dataIt++;
+	}
 
 }
 
@@ -183,37 +187,63 @@ void OsiStackTest::Test3::runTest()
 
 	OsiStackTest* pTest = OsiStackTest::getMainTest();
 
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Client side has error transfer", false, pTest->checkClientErrorTransfer);
-//
-//	qint32 expectedSize = sizeof(s_testData)/sizeof(s_testData[0]);
-//	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Check client size of received data wrong", expectedSize, pTest->m_clientRcvData.size());
-//
-//	QByteArray::Iterator dataIt = pTest->m_clientRcvData.begin();
-//	for (char c: s_testData)
-//	{
-//		CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Check client side received data wrong", c, *dataIt);
-//		dataIt++;
-//	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Client side has error transfer", false, pTest->checkClientErrorTransfer);
+
+	qint32 expectedSize = sizeof(s_testData)/sizeof(s_testData[0]);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Check client size of received data wrong", expectedSize, pTest->m_clientRcvData.size());
+
+	QByteArray::Iterator dataIt = pTest->m_clientRcvData.begin();
+	for (char c: s_testData)
+	{
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Test3: Check client side received data wrong", c, *dataIt);
+		dataIt++;
+	}
 
 }
 
 // server slots
-void OsiStackTest::slotServerClientConnected(const CConnection*)
+void OsiStackTest::slotServerClientConnected(const CConnection* pconn)
 {
 	qDebug() << "OsiStackTest::slotServerClientConnected";
 
-	checkServerConnected = true;
+	checkClientConnected = true;
+
+	pconn->asyncReadWriteInit();
 }
 
 void OsiStackTest::slotServerClientDisconnected(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotServerClientDisconnected";
 
-	checkServerConnected = false;
+	checkClientConnected = false;
 }
 
-void OsiStackTest::slotServerTSduReady(const CConnection* that)
+void OsiStackTest::slotServerTSduReady(const CConnection* pconn)
 {
+	qDebug() << "OsiStackTest::slotServerTSduReady: checkClientConnected = " << checkClientConnected;
+
+	if (checkClientConnected)
+	{
+		if ( (const_cast<CConnection*>(pconn))->receive(m_serverRcvData) == true)
+		{
+			// TSDU Ready
+			qDebug() << "Client TSDU ready: " << m_serverRcvData.toHex();
+
+			pAcseAssociation = pServerAcse->createNewAcseAssociation(const_cast<CConnection*>(pconn));
+
+			QDataStream InputStream(&m_serverRcvData, QIODevice::ReadOnly);
+
+			m_serverPayload = pAcseAssociation->listenForCn(InputStream);
+
+			qDebug() << "Received Payload" << m_serverPayload.toHex();
+
+			m_serverRcvData.clear();
+ 		}
+		else
+		{
+			qDebug() << "Client TSDU not ready yet: " << m_serverRcvData.toHex();
+		}
+	}
 
 }
 
@@ -233,21 +263,35 @@ void OsiStackTest::slotServerIOError(QString str)
 // server acse level slots
 void OsiStackTest::slotAcseServerClientConnected(CAcseAssociation*)
 {
+	qDebug() << "OsiStackTest::slotAcseServerClientConnected";
 
 }
 
 void OsiStackTest::slotAcseServerAssociationClosed(CAcseAssociation*)
 {
-
+	qDebug() << "OsiStackTest::slotAcseServerAssociationClosed";
 }
 
-void OsiStackTest::slotAcseServerCnReady(CAcseAssociation*)
+void OsiStackTest::slotAcseServerCnReady(CAcseAssociation* acse)
 {
+	qDebug() << "OsiStackTest::slotAcseServerCnReady: payload = " << m_serverPayload.toHex();
 
+	checkAcseCnReady = true;
+
+	// Send answer to client
+	CBerByteArrayOutputStream payload(m_serverPayload, 0);
+	acse->accept(payload);
 }
 
-void OsiStackTest::slotAcseServerTSduReady(CAcseAssociation*)
+void OsiStackTest::slotAcseServerTSduReady(CAcseAssociation* acse)
 {
+	qDebug() << "OsiStackTest::slotAcseServerTSduReady: checkAcseCnReady = " << checkAcseCnReady;
+
+	if (checkAcseCnReady)
+	{
+		(const_cast<CAcseAssociation*>(acse))->receive(m_serverRcvData);
+		qDebug() << "Client ACSE TSDU ready";
+	}
 
 }
 
@@ -257,19 +301,12 @@ void OsiStackTest::slotAcseServerIOError(QString strErr)
 
 }
 
-
 // client slots
 void OsiStackTest::slotConnectionReady(const CConnection* that)
 {
 	qDebug() << "OsiStackTest::slotConnectionReady";
 
 	checkClientConnected = true;
-
-	CConnection* myconn = const_cast<CConnection*>(that);
-
-	OsiStackTest* pTest = OsiStackTest::getMainTest();
-
-	pTest->sendTestData(myconn);
 }
 
 void OsiStackTest::slotConnectionClosed(const CConnection*)
@@ -279,17 +316,28 @@ void OsiStackTest::slotConnectionClosed(const CConnection*)
 	checkClientConnected = false;
 }
 
-void OsiStackTest::slotClientTSduReady(const CConnection* that)
+void OsiStackTest::slotClientTSduReady(const CConnection* pconn)
 {
+	qDebug() << "OsiStackTest::slotClientTSduReady: checkClientConnected = " << checkClientConnected;
 
 	if (checkClientConnected)
 	{
-		qDebug() << "OsiStackTest::slotClientTSduReady";
-
-		QByteArray tempBuffer;
-		if ( (const_cast<CConnection*>(that))->receive(tempBuffer) == true)
+		if ( (const_cast<CConnection*>(pconn))->receive(m_clientRcvData) == true)
 		{
-			m_clientRcvData = tempBuffer;
+			// TSDU Ready
+			qDebug() << "Client TSDU ready: " << m_clientRcvData.toHex();
+
+			QDataStream InputStream(&m_clientRcvData, QIODevice::ReadOnly);
+
+			m_clientRcvData = pAcseAssociation->parseClientAnswer(InputStream, m_serverPayload.size());
+
+			qDebug() << "Received Payload" << m_clientRcvData.toHex();
+
+			m_clientRcvData.clear();
+ 		}
+		else
+		{
+			qDebug() << "Client TSDU not ready yet: " << m_clientRcvData.toHex();
 		}
 	}
 }
@@ -304,17 +352,25 @@ void OsiStackTest::slotClientIOError(QString str)
 // client acse slots
 void OsiStackTest::slotAcseClientAssociationReady(CAcseAssociation*)
 {
+	qDebug() << "OsiStackTest::slotAcseClientAssociationReady";
 
+	checkAcseAssociationReady = true;
 }
 
 void OsiStackTest::slotAcseClientAssociationClosed(CAcseAssociation*)
 {
-
+	qDebug() << "OsiStackTest::slotAcseClientAssociationClosed";
 }
 
-void OsiStackTest::slotAcseClientTSduReady(CAcseAssociation*)
+void OsiStackTest::slotAcseClientTSduReady(CAcseAssociation* acse)
 {
+	qDebug() << "OsiStackTest::slotAcseClientTSduReady: checkAcseAssociationReady = " << checkAcseAssociationReady;
 
+	if (checkAcseAssociationReady)
+	{
+		(const_cast<CAcseAssociation*>(acse))->receive(m_clientRcvData);
+		qDebug() << "Client ACSE TSDU ready";
+	}
 }
 
 void OsiStackTest::slotAcseClientIOError(QString strErr)
@@ -356,8 +412,8 @@ void OsiStackTest::prepare()
 	CServer* srv = new CServer(this);
 	CClient* clt = new CClient(this);
 
-//	srv->start();
-//	QThread::usleep(500);
+	srv->start();
+	QThread::usleep(500);
 	clt->start();
 
 }
@@ -366,18 +422,18 @@ void OsiStackTest::run()
 {
     // Do processing here
 
-//	CppUnit::TextTestRunner runner;
-//	runner.addTest(test1);
-//	runner.addTest(test2);
-//	runner.addTest(test3);
-//
-//	runner.run();
-//
-//	std::ofstream outFile("testResult.xml");
-//	CppUnit::XmlOutputter outputer(&runner.result(), outFile);
-//	outputer.write();
-//
-//	emit finished();
+	CppUnit::TextTestRunner runner;
+	runner.addTest(test1);
+	runner.addTest(test2);
+	runner.addTest(test3);
+
+	runner.run();
+
+	std::ofstream outFile("testResult.xml");
+	CppUnit::XmlOutputter outputer(&runner.result(), outFile);
+	outputer.write();
+
+	emit finished();
 }
 
 int main(int argc, char *argv[])
@@ -389,7 +445,7 @@ int main(int argc, char *argv[])
     QObject::connect(test, SIGNAL(finished()), &a, SLOT(quit()));
 
     QTimer::singleShot(0, test, SLOT(prepare()));
-    QTimer::singleShot(1000, test, SLOT(run()));
+    QTimer::singleShot(3000, test, SLOT(run()));
 
     return  a.exec();
 }
