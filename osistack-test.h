@@ -42,7 +42,8 @@ class OsiStackTest: public QObject
 		pClientAcse(nullptr),
 		pConnection(nullptr),
 		pConnectionListener(nullptr),
-		pAcseAssociation(nullptr),
+		pClientAcseAssociation(nullptr),
+		pServerAcseAssociation(nullptr),
 		pAcseAssociationListener(nullptr),
 		checkClientConnected(false),
 		checkClientErrorConnected(false),
@@ -52,7 +53,8 @@ class OsiStackTest: public QObject
 		checkServerErrorConnected(false),
 		checkIllegalArg(false),
 		checkIllegalClassMbr(false),
-		checkAcseAssociationReady(false),
+		checkClientAcseAssociationReady(false),
+		checkServerAcseAssociationReady(false),
 		checkAcseCnReady(false),
 		checkAcseIOError(false),
 		test1(nullptr),
@@ -66,7 +68,8 @@ public:
 	CClientAcseSap* pClientAcse;
 	CConnection* pConnection;
 	CConnectionListener* pConnectionListener;
-	CAcseAssociation* pAcseAssociation;
+	CAcseAssociation* pClientAcseAssociation;
+	CAcseAssociation* pServerAcseAssociation;
 	CAcseAssociationListener* pAcseAssociationListener;
 
 	CBerOctetString whatIsString;
@@ -82,7 +85,8 @@ public:
 	bool checkIllegalClassMbr;
 
 	// Check for presentation level
-	bool checkAcseAssociationReady;
+	bool checkClientAcseAssociationReady;
+	bool checkServerAcseAssociationReady;
 	bool checkAcseCnReady;
 	bool checkAcseIOError;
 

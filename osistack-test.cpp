@@ -115,20 +115,20 @@ void OsiStackTest::startClient()
 	if (pConnection)
 		slotConnectionReady(pConnection);
 
-	pAcseAssociation = pClientAcse->createAssociate(pConnection);
+	pClientAcseAssociation = pClientAcse->createAssociate(pConnection);
 
 	// connection slots
 	connect(pConnection, SIGNAL(signalTSduReady(const CConnection*)), this, SLOT(slotClientTSduReady(const CConnection*)));
 	connect(pConnection, SIGNAL(signalConnectionReady(const CConnection*)), this, SLOT(slotConnectionReady(const CConnection*)));
 	connect(pConnection, SIGNAL(signalConnectionClosed(const CConnection*)), this, SLOT(slotConnectionClosed(const CConnection*)));
-	connect(pAcseAssociation, SIGNAL(signalAcseAssociationReady(CAcseAssociation*)), this, SLOT(slotAcseClientAssociationReady(CAcseAssociation*)));
-	connect(pAcseAssociation, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), this, SLOT(slotAcseClientTSduReady(CAcseAssociation*)));
-	connect(pAcseAssociation, SIGNAL(signalAcseIOError(QString)), this, SLOT(slotAcseClientIOError(QString)));
+	connect(pClientAcseAssociation, SIGNAL(signalAcseAssociationReady(CAcseAssociation*)), this, SLOT(slotAcseClientAssociationReady(CAcseAssociation*)));
+	connect(pClientAcseAssociation, SIGNAL(signalAcseTSduReady(CAcseAssociation*)), this, SLOT(slotAcseClientTSduReady(CAcseAssociation*)));
+	connect(pClientAcseAssociation, SIGNAL(signalAcseIOError(QString)), this, SLOT(slotAcseClientIOError(QString)));
 
 	QByteArray arrApdu( (char*) s_mmsInitRequestPDU, sizeof(s_mmsInitRequestPDU)/sizeof(s_mmsInitRequestPDU[0]) );
 	CBerByteArrayOutputStream apdu(arrApdu, 0);
 
-	pClientAcse->startAssociation(pAcseAssociation, QString(""), apdu);
+	pClientAcse->startAssociation(pClientAcseAssociation, QString(""), apdu);
 
 	// TODO Parse data without headers
 
@@ -205,40 +205,56 @@ void OsiStackTest::slotServerClientConnected(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotServerClientConnected";
 
-	checkClientConnected = true;
+	checkServerConnected = true;
 }
 
 void OsiStackTest::slotServerClientDisconnected(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotServerClientDisconnected";
 
-	checkClientConnected = false;
+	checkServerConnected = false;
+	checkServerAcseAssociationReady = false;
 }
 
 void OsiStackTest::slotServerTSduReady(const CConnection* pconn)
 {
 	qDebug() << "OsiStackTest::slotServerTSduReady: checkClientConnected = " << checkClientConnected;
 
-	if (checkClientConnected)
+	if (checkServerConnected)
 	{
 		if ( (const_cast<CConnection*>(pconn))->receive(m_serverRcvData) == true)
 		{
 			// TSDU Ready
-			qDebug() << "Client TSDU ready: " << m_serverRcvData.toHex();
+			qDebug() << "Server TSDU ready: " << m_serverRcvData.toHex();
 
-			pAcseAssociation = pServerAcse->createNewAcseAssociation(const_cast<CConnection*>(pconn));
+			// ACSE connect procedure
+			if (!checkServerAcseAssociationReady)
+			{
+				checkServerAcseAssociationReady = true;
 
-			QDataStream InputStream(&m_serverRcvData, QIODevice::ReadOnly);
+				pServerAcseAssociation = pServerAcse->createNewAcseAssociation(const_cast<CConnection*>(pconn));
 
-			m_serverPayload = pAcseAssociation->listenForCn(InputStream);
+				QDataStream InputStream(&m_serverRcvData, QIODevice::ReadOnly);
 
-			qDebug() << "Received Payload" << m_serverPayload.toHex();
+				m_serverPayload = pServerAcseAssociation->listenForCn(InputStream);
 
-			m_serverRcvData.clear();
+				qDebug() << "OsiStackTest::slotServerTSduReady: Received Payload" << m_serverPayload.toHex();
+
+				m_serverRcvData.clear();
+			}
+			else
+			{
+				pServerAcseAssociation->receive(m_serverRcvData);
+
+				QByteArray arr((char*)s_testData, sizeof(s_testData));
+				CBerByteArrayOutputStream oStream(arr, 0);
+
+				pServerAcseAssociation->send(oStream);
+			}
  		}
 		else
 		{
-			qDebug() << "Client TSDU not ready yet: " << m_serverRcvData.toHex();
+			qDebug() << "Server TSDU not ready yet: " << m_serverRcvData.toHex();
 		}
 	}
 
@@ -280,16 +296,8 @@ void OsiStackTest::slotAcseServerCnReady(CAcseAssociation* acse)
 	acse->accept(payload);
 }
 
-void OsiStackTest::slotAcseServerTSduReady(CAcseAssociation* acse)
+void OsiStackTest::slotAcseServerTSduReady(CAcseAssociation*)
 {
-	qDebug() << "OsiStackTest::slotAcseServerTSduReady: checkAcseCnReady = " << checkAcseCnReady;
-
-	if (checkAcseCnReady)
-	{
-		(const_cast<CAcseAssociation*>(acse))->receive(m_serverRcvData);
-		qDebug() << "Client ACSE TSDU ready";
-	}
-
 }
 
 void OsiStackTest::slotAcseServerIOError(QString strErr)
@@ -303,21 +311,22 @@ void OsiStackTest::slotConnectionReady(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotConnectionReady";
 
-	checkServerConnected = true;
+	checkClientConnected = true;
 }
 
 void OsiStackTest::slotConnectionClosed(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotConnectionClosed";
 
-	checkServerConnected = false;
+	checkClientConnected = false;
 }
 
 void OsiStackTest::slotClientTSduReady(const CConnection* pconn)
 {
-	qDebug() << "OsiStackTest::slotClientTSduReady: checkServerConnected = " << checkServerConnected;
+	qDebug() << "OsiStackTest::slotClientTSduReady: checkServerConnected = " << checkServerConnected
+			<< "; checkClientAcseAssociationReady = " << checkClientAcseAssociationReady;
 
-	if (checkServerConnected)
+	if (checkClientConnected)
 	{
 		if ( (const_cast<CConnection*>(pconn))->receive(m_clientRcvData) == true)
 		{
@@ -326,11 +335,25 @@ void OsiStackTest::slotClientTSduReady(const CConnection* pconn)
 
 			QDataStream InputStream(&m_clientRcvData, QIODevice::ReadOnly);
 
-			m_clientRcvData = pAcseAssociation->parseClientAnswer(InputStream, m_serverPayload.size());
+			if (!checkClientAcseAssociationReady)
+			{
+				m_clientRcvData = pClientAcseAssociation->parseClientAnswer(InputStream, m_serverPayload.size());
 
-			qDebug() << "OsiStackTest::slotClientTSduReady: Received Payload" << m_clientRcvData.toHex();
+				qDebug() << "OsiStackTest::slotClientTSduReady: Received Payload" << m_clientRcvData.toHex();
 
-			m_clientRcvData.clear();
+				m_clientRcvData.clear();
+
+				checkClientAcseAssociationReady = true;
+
+				QByteArray arr((char*)s_testData, sizeof(s_testData));
+				CBerByteArrayOutputStream oStream(arr, 0);
+
+				pClientAcseAssociation->send(oStream);
+			}
+			else
+			{
+				pClientAcseAssociation->receive(m_clientRcvData);
+			}
  		}
 		else
 		{
@@ -349,9 +372,6 @@ void OsiStackTest::slotClientIOError(QString str)
 // client acse slots
 void OsiStackTest::slotAcseClientAssociationReady(CAcseAssociation*)
 {
-	qDebug() << "OsiStackTest::slotAcseClientAssociationReady";
-
-	checkAcseAssociationReady = true;
 }
 
 void OsiStackTest::slotAcseClientAssociationClosed(CAcseAssociation*)
@@ -359,15 +379,8 @@ void OsiStackTest::slotAcseClientAssociationClosed(CAcseAssociation*)
 	qDebug() << "OsiStackTest::slotAcseClientAssociationClosed";
 }
 
-void OsiStackTest::slotAcseClientTSduReady(CAcseAssociation* acse)
+void OsiStackTest::slotAcseClientTSduReady(CAcseAssociation*)
 {
-	qDebug() << "OsiStackTest::slotAcseClientTSduReady: checkAcseAssociationReady = " << checkAcseAssociationReady;
-
-	if (checkAcseAssociationReady)
-	{
-		(const_cast<CAcseAssociation*>(acse))->receive(m_clientRcvData);
-		qDebug() << "Client ACSE TSDU ready";
-	}
 }
 
 void OsiStackTest::slotAcseClientIOError(QString strErr)
@@ -442,7 +455,7 @@ int main(int argc, char *argv[])
     QObject::connect(test, SIGNAL(finished()), &a, SLOT(quit()));
 
     QTimer::singleShot(0, test, SLOT(prepare()));
-    QTimer::singleShot(3000, test, SLOT(run()));
+    QTimer::singleShot(1000, test, SLOT(run()));
 
     return  a.exec();
 }
