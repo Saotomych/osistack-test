@@ -118,7 +118,6 @@ void OsiStackTest::startClient()
 	pAcseAssociation = pClientAcse->createAssociate(pConnection);
 
 	// connection slots
-	pConnection->asyncReadWriteInit();
 	connect(pConnection, SIGNAL(signalTSduReady(const CConnection*)), this, SLOT(slotClientTSduReady(const CConnection*)));
 	connect(pConnection, SIGNAL(signalConnectionReady(const CConnection*)), this, SLOT(slotConnectionReady(const CConnection*)));
 	connect(pConnection, SIGNAL(signalConnectionClosed(const CConnection*)), this, SLOT(slotConnectionClosed(const CConnection*)));
@@ -202,7 +201,7 @@ void OsiStackTest::Test3::runTest()
 }
 
 // server slots
-void OsiStackTest::slotServerClientConnected(const CConnection* pconn)
+void OsiStackTest::slotServerClientConnected(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotServerClientConnected";
 
@@ -300,7 +299,7 @@ void OsiStackTest::slotAcseServerIOError(QString strErr)
 }
 
 // client slots
-void OsiStackTest::slotConnectionReady(const CConnection* that)
+void OsiStackTest::slotConnectionReady(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotConnectionReady";
 
@@ -329,7 +328,7 @@ void OsiStackTest::slotClientTSduReady(const CConnection* pconn)
 
 			m_clientRcvData = pAcseAssociation->parseClientAnswer(InputStream, m_serverPayload.size());
 
-			qDebug() << "Received Payload" << m_clientRcvData.toHex();
+			qDebug() << "OsiStackTest::slotClientTSduReady: Received Payload" << m_clientRcvData.toHex();
 
 			m_clientRcvData.clear();
  		}
