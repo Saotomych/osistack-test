@@ -207,8 +207,6 @@ void OsiStackTest::slotServerClientConnected(const CConnection* pconn)
 	qDebug() << "OsiStackTest::slotServerClientConnected";
 
 	checkClientConnected = true;
-
-	pconn->asyncReadWriteInit();
 }
 
 void OsiStackTest::slotServerClientDisconnected(const CConnection*)
@@ -306,21 +304,21 @@ void OsiStackTest::slotConnectionReady(const CConnection* that)
 {
 	qDebug() << "OsiStackTest::slotConnectionReady";
 
-	checkClientConnected = true;
+	checkServerConnected = true;
 }
 
 void OsiStackTest::slotConnectionClosed(const CConnection*)
 {
 	qDebug() << "OsiStackTest::slotConnectionClosed";
 
-	checkClientConnected = false;
+	checkServerConnected = false;
 }
 
 void OsiStackTest::slotClientTSduReady(const CConnection* pconn)
 {
-	qDebug() << "OsiStackTest::slotClientTSduReady: checkClientConnected = " << checkClientConnected;
+	qDebug() << "OsiStackTest::slotClientTSduReady: checkServerConnected = " << checkServerConnected;
 
-	if (checkClientConnected)
+	if (checkServerConnected)
 	{
 		if ( (const_cast<CConnection*>(pconn))->receive(m_clientRcvData) == true)
 		{
