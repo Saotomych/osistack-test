@@ -27,7 +27,6 @@
 #include "socketfactory.h"
 
 #include "AcseAssociation.h"
-#include "AcseAssociationListener.h"
 #include "ClientAcseSap.h"
 #include "ServerAcseSap.h"
 
@@ -41,10 +40,8 @@ class OsiStackTest: public QObject
 		pServerAcse(nullptr),
 		pClientAcse(nullptr),
 		pConnection(nullptr),
-		pConnectionListener(nullptr),
 		pClientAcseAssociation(nullptr),
 		pServerAcseAssociation(nullptr),
-		pAcseAssociationListener(nullptr),
 		checkClientConnected(false),
 		checkClientErrorConnected(false),
 		checkClientErrorTransfer(false),
@@ -55,7 +52,6 @@ class OsiStackTest: public QObject
 		checkIllegalClassMbr(false),
 		checkClientAcseAssociationReady(false),
 		checkServerAcseAssociationReady(false),
-		checkAcseCnReady(false),
 		checkAcseIOError(false),
 		test1(nullptr),
 		test2(nullptr),
@@ -67,10 +63,8 @@ public:
 	CServerAcseSap* pServerAcse;
 	CClientAcseSap* pClientAcse;
 	CConnection* pConnection;
-	CConnectionListener* pConnectionListener;
 	CAcseAssociation* pClientAcseAssociation;
 	CAcseAssociation* pServerAcseAssociation;
-	CAcseAssociationListener* pAcseAssociationListener;
 
 	CBerOctetString whatIsString;
 
@@ -87,7 +81,6 @@ public:
 	// Check for presentation level
 	bool checkClientAcseAssociationReady;
 	bool checkServerAcseAssociationReady;
-	bool checkAcseCnReady;
 	bool checkAcseIOError;
 
 	QByteArray m_serverRcvData;
@@ -188,24 +181,11 @@ public slots:
 	void slotServerCRReady(const CConnection*);
 	void slotServerIOError(QString str);
 
-	// server acse level slots
-	void slotAcseServerClientConnected(CAcseAssociation* that);
-	void slotAcseServerAssociationClosed(CAcseAssociation*);
-	void slotAcseServerCnReady(CAcseAssociation*);
-	void slotAcseServerTSduReady(CAcseAssociation*);
-	void slotAcseServerIOError(QString strErr);
-
 	// client slots
 	void slotConnectionReady(const CConnection* that);
 	void slotConnectionClosed(const CConnection* that);
 	void slotClientTSduReady(const CConnection* that);
 	void slotClientIOError(QString str);
-
-	// client acse slots
-	void slotAcseClientAssociationReady(CAcseAssociation*);
-	void slotAcseClientAssociationClosed(CAcseAssociation*);
-	void slotAcseClientTSduReady(CAcseAssociation*);
-	void slotAcseClientIOError(QString strErr);
 
 	// Client Errors
 	void slotIllegalArgument(QString strErr);
